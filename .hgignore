@@ -1,0 +1,44 @@
+syntax: glob
+
+.vscode
+.venv
+.env
+*~
+*.py[cod]
+*.orig
+
+# Sphinx
+docs/_build
+
+# Packages
+*.egg
+*.egg-info
+dist
+build
+eggs
+parts
+bin
+var
+sdist
+develop-eggs
+.installed.cfg
+lib
+lib64
+
+# Unit test / coverage reports
+.coverage
+.tox
+htmlcov/
+
+# cache
+__pycache__
+.mypy_cache
+.pytest_cache
+
+# Caddy local data
+caddy/data/**/local
+
+# Redis
+server/redis
+node_modules
+result.csv
