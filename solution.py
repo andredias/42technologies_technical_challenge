@@ -1,34 +1,32 @@
+"""
+Usage:
+
+python solution.py INPUT_FILENAME METRIC_FIELDNAME
+
+In order to save the output to a file, redirect the output to a file.
+Example:
+
+python solution.py data-big-input.txt net_sales_units > output.txt
+
+
+ATTENTION:
+
+There might be differences in the decimal places in number columns between
+the output produced by this solution and the output data provided as reference.
+"""
+
 import csv
 import sys
 from pathlib import Path
+
+from tree import Node
 
 DELIMITER = '|'
 
 
 def hierarchical_sort(rows: list, metric: str, reverse=True) -> list:
-    header = rows[0]
-    metric_index = header.index(metric)
-    partial_rows = partial_hierachical_sort(rows, metric, reverse)
-    stack = []
-    intervals = []
 
-    def handle_interval(totals: int, metric_value: float, line: int) -> None:
-        while len(stack) and stack[-1][0] <= totals:
-            interval = stack.pop()
-            interval[2] = slice(interval[2], line)
-            intervals.append(interval)
-        stack.append([totals, metric_value, line])
-
-    for line, row in enumerate(partial_rows):
-        totals = row.count('$total')
-        if totals:
-            handle_interval(totals, float(row[metric_index]), line)
-    handle_interval(2 ** 10, 0, line)  # empty remaining intervals
-
-    return partial_rows
-
-
-def partial_hierachical_sort(rows: list, metric: str, reverse=True) -> list:
+    # partial sort
     header = rows[0]
     metric_index = header.index(metric)
     p_index = max(i for i, name in enumerate(rows[0]) if name.startswith('property'))
@@ -40,7 +38,15 @@ def partial_hierachical_sort(rows: list, metric: str, reverse=True) -> list:
         )
         return result
 
-    return [header] + sorted(rows[1:], key=_sort_func, reverse=reverse)
+    partially_sorted_rows = sorted(rows[1:], key=_sort_func, reverse=reverse)
+
+    # second sorting pass
+    ref_node = root = Node(row=partially_sorted_rows[0], metric_index=metric_index)
+    for row in partially_sorted_rows[1:]:
+        new_node = Node(row=row, metric_index=metric_index)
+        ref_node.insert(new_node)
+        ref_node = new_node
+    return [header] + root.export_rows(reverse=reverse)
 
 
 if __name__ == '__main__':
